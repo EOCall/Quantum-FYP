@@ -1,0 +1,253 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{qcircuit}
+\usepackage{amsmath}
+\usepackage{amsfonts} 
+
+\newcommand{\ket}[1]{ \left| #1 \right\rangle }
+\newcommand{\ketplus}{\left[ \frac{ \ket{0}+\ket{1} }{\sqrt{2}} \right]}
+\newcommand{\ketminus}{\left[ \frac{ \ket{0}-\ket{1} }{\sqrt{2}} \right]}
+\newcommand{\comment}[1]
+
+\title{Visualisation of quantum algorithms}
+\author{Eoghan O'Callaghan}
+
+\date{February 2022}
+
+\begin{document}
+
+\maketitle
+
+\section*{Introduction}
+\section{Qubits}
+choice of representation etc. \\
+
+\noindent
+The Hadamard gate '$H$' transforms the state $\ket{0}$ to the state $(\ket{0} + \ket{1}) / \sqrt{2}$ and transforms $\ket{1}$ to $(\ket{0} - \ket{1})/ \sqrt{2}$.\\
+The Hadamard gate is also it's own inverse so:
+\begin{center}
+$H \cdot \ket{0} + \ket{1}) / \sqrt{2} = \ket{0}$\\
+$H \cdot (\ket{0} - \ket{1})/ \sqrt{2} = \ket{1}$
+\end{center}
+
+\comment{use a table here}
+
+Hadamard \ \Qcircuit @C=1em @R=1em { & \gate{H} & \qw} 
+$
+\frac{1}{\sqrt{2}} 
+\begin{pmatrix}
+  1 & 1\\ 
+  1 & -1
+\end{pmatrix}
+$
+
+\section{Deutsch-Josza algorithm}
+\subsection{Deutsch algorithm}
+
+The Deutsch problem is the first known algorithm to demonstrate the possibility for quantum computers to perform better than their classical counterparts and is described as follows. Given a function $f(x) : \{0,1\} \rightarrow \{0,1\}$ determine whether $f(0) = f(1)$. On a classical computer the function $f(x)$ must be evaluated twice to solve this. The Deutsch algorithm is capable of determining if $f(0) = f(1)$ with only a single application of a quantum gate $U^f$ that implements the function $f(x)$.
+
+$$
+\Qcircuit @C=1em @R=1em {
+\lstick{x} & \multigate{1}{U^f} & \rstick{x} \qw \\
+\lstick{y} & \ghost{U^f} & \rstick{y \oplus f(x)} \qw
+}
+$$
+
+\noindent
+Here $\oplus$ denotes addition modulo 2. The circuit depicted below implements Deutsch's algorithm, if $f(0)=f(1)$ then the first qubit when measured will return 0. In the obverse case where $f(0) \neq f(1)$ then the first qubit will always be found to be 1.
+
+\begin{center}
+\textit{A quantum circuit implementing the Deutsch algorithm}
+\end{center}
+
+$$
+\Qcircuit @C=1em @R=1em {
+\lstick{|0\rangle} & \gate{H} & \multigate{1}{U^f} & \gate{H} & \meter \\
+\lstick{|1\rangle} & \gate{H} & \ghost{U^f}  & \qw & \qw \\
+\ket{\psi_0} & \rstick{\ket{\psi_1}} &  \rstick{\ket{\psi_2}} & \rstick{\ket{\psi_3}}
+}
+$$
+
+\hspace{1pt}\\
+\\
+
+\noindent
+The steps in the algorithm are as follows; first the input state $ \ket{\psi_0} = \ket{01} $ is prepared and then operated upon by two Hadamard gates to obtain the state:
+
+$$ \ket{\psi_1} =  \ketplus \ketminus $$
+
+\noindent
+Next the gate $U^f$ is applied to $\ket{\psi_1}$, the four possibilities for the resultant state $\ket{\psi_2}$ are enumerated in the following table:
+\comment{fix this table}
+
+\begin{center}
+\begin{tabular}{ |c|c|c| } 
+\hline
+\rule{0pt}{2.5ex} $\ket{\psi_2}$ & $f(0) = 0$ & $f(0) = 1$ \\[1pt]
+\hline
+\rule{0pt}{4ex} $f(1) = 0$ & $ \ketplus \ketminus $ & $- \ketminus \ketminus $ \\[2ex]
+\hline
+\rule{0pt}{4ex} $f(1) = 1$ & $ \ketminus \ketminus $ & $ - \ketplus \ketminus $ \\[2ex]
+\hline
+\end{tabular}
+\end{center}
+
+\noindent
+Now applying the hadamard transform to the first qubit one obtains:
+
+\begin{center}
+\begin{tabular}{ |c|c|c| } 
+\hline
+\rule{0pt}{2.5ex} $\ket{\psi_3}$ & $f(0) = 0$ & $f(0) = 1$ \\[1pt]
+\hline
+\rule{0pt}{4ex} $f(1) = 0$ & $ \ket{0} \ketminus $ & $- \ket{1} \ketminus $ \\[2ex]
+\hline
+\rule{0pt}{4ex} $f(1) = 1$ & $ \ket{1} \ketminus $ & $ - \ket{0} \ketminus $ \\[2ex]
+\hline
+\end{tabular}
+\end{center}
+
+\comment{This is probably redundant}
+\noindent
+Then upon measuring the first qubit one obtains as expected.
+
+\begin{center}
+\begin{tabular}{ |c|c|c| } 
+\hline
+\rule{0pt}{2.5ex} measurement & $f(0) = 0$ & $f(0) = 1$ \\[1pt]
+\hline
+\rule{0pt}{4ex} $f(1) = 0$ & $0$ & $1$ \\[2ex]
+\hline
+\rule{0pt}{4ex} $f(1) = 1$ & $1$ & $0$ \\[2ex]
+\hline
+\end{tabular}
+\end{center}
+
+\pagebreak
+\subsection{Deutsch-Josza algorithm}
+The Deutsch-Josza algorithm is a quantum algorithm which solves a more general version of Deutsch's problem and is described as follows:\\ For a natural number $n \in \mathbb{N} $ and a blackbox implementing a function \\ $f(x): \{0,1,2,... ,2^n-1\} \rightarrow \{0,1\}$ from one of the following two sets of functions:\\
+
+The constant functions: $ C = \{f(x) = 0 , \ f(x) = 1 \} $
+
+The balanced functions: $ B = \{f(x) | \sum\limits_{x=0}^{2^n-1} f(x) = 2^{(n-1)} \}$ \\
+
+\comment{
+\begin{center}
+$f(x) = 0 \ \forall x$, \\[1ex]
+$f(x) = 1 \ \forall x$ or \\
+$\sum\limits_{x=0}^{2^n-1} f(x) = 2^{(n-1)}$
+
+\end{center}
+}
+
+\noindent
+Determine from which of these two sets the function implemented by the blackbox is an element of.\\
+\hrule
+\hspace{1pt}\\ \\
+\noindent
+In the classical case at worst one would need to test $2^{n-1}+1$ inputs to solve this problem. It is however possible to solve this problem with only a single application of a unitary transform $U_f$ that implements the function $f(x)$ as shown below. \comment{precise phrasing of this?}
+
+$$
+\Qcircuit @C=1em @R=1em {
+\lstick{|0\rangle} & {/^n} \qw & \gate{H^{\otimes n}} & \multigate{1}{U^f} & \gate{H^{\otimes n}} & \qw \\
+\lstick{|1\rangle} & \qw & \gate{H} & \ghost{U^f}  & \qw & \qw \\
+\ket{\psi_0} & & \rstick{\ket{\psi_1}} &  \rstick{\ket{\psi_2}} & \rstick{\ket{\psi_3}}
+}
+$$
+
+\hspace{1pt} \\
+\noindent
+The Deutsch-Josza algorithm is similar to the algorithm in the previous section used to solve the original Deutsch problem. First $n$ qubits are prepared in the state $\ket{0}$ and these are referred to as the query register, an additional qubit is prepared in the state $\ket{1}$ and is referred to as the answer register. The system is now in the state:
+
+$$ \ket{\psi_0} = \ket{0}^{\otimes n} \ket{1} $$
+
+\noindent
+Next the Hadamard transform is applied to the query register and the answer register to obtain the state:
+
+$$ \ket{\psi_1} = \ketplus^n \ketminus $$
+\comment{notation?}
+
+\noindent
+After the gate $U^f$ is applied there are three cases to be considered: \\
+
+$$ f(x) = 0, \ \ket{\psi_2} = \ketplus^n \ketminus $$
+
+$$ f(x) = 1, \ \ket{\psi_2} = \left(-\ketplus\right)^n \ketminus $$
+
+\comment{better to say an element of a set and define the set below}
+$$
+f(x) \in B, \ \ket{\psi_2} =
+ \left(\textrm{a permutation of} \left(-\ketplus \right)^{\frac{n}{2}} \ketplus^{\frac{n}{2}} \right) \cdot \ketminus
+$$
+
+\noindent
+Now applying the Hadamard transform to the query register for the above cases one obtains:
+
+$$ f(x) = 0, \ \ket{\psi_2} = \ket{0}^n \ketminus $$
+
+$$ f(x) = 1, \ \ket{\psi_2} = (-\ket{0})^n \ketminus $$
+
+\comment{better to say an element of a set and define the set below}
+$$ 
+f(x) \in B, \ \ket{\psi_2} = 
+\left(\textrm{a permutation of} \left(-\ket{0} \right)^{\frac{n}{2}} \ket{0}^{\frac{n}{2}} \right) \cdot \ketminus
+$$
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\end{document}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
